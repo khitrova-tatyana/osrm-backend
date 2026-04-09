@@ -9,7 +9,7 @@ namespace osrm::extractor
 namespace detail
 {
 template <storage::Ownership Ownership>
-using PackedOSMIDs = util::detail::PackedVector<OSMNodeID, 34, Ownership>;
+using PackedOSMIDs = util::detail::PackedVector<OSMNodeID, 38, Ownership>;
 } // namespace detail
 
 using PackedOSMIDsView = detail::PackedOSMIDs<storage::Ownership::View>;

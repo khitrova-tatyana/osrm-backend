@@ -9,6 +9,7 @@
 #include "extractor/extraction_way.hpp"
 #include "extractor/extractor_callbacks.hpp"
 #include "extractor/files.hpp"
+#include "extractor/neomatrix_files.hpp"
 #include "extractor/maneuver_override_relation_parser.hpp"
 #include "extractor/name_table.hpp"
 #include "extractor/node_based_graph_factory.hpp"
@@ -213,6 +214,32 @@ int Extractor::run(ScriptingEnvironment &scripting_environment)
     std::vector<EdgeDuration> edge_based_node_durations;
     std::vector<EdgeDistance> edge_based_node_distances;
     std::uint32_t ebg_connectivity_checksum = 0;
+
+    // [Neomatrix fork] Write raw pre-compression edges to support the v5 legacy OSRM export.
+    // Must be done BEFORE the factory consumes/compresses them.
+    {
+        auto legacy_osrm_path = config.base_path.string() + ".osrm.v5-legacy-osrm";
+        // Filter out invalid edges (same as old ExtractionContainers::WriteEdges)
+        std::vector<extractor::NodeBasedEdge> raw_edges;
+        raw_edges.reserve(parsed_osm_data.edge_list.size());
+        for (const auto &edge : parsed_osm_data.edge_list)
+        {
+            if (edge.source != SPECIAL_NODEID && edge.target != SPECIAL_NODEID)
+                raw_edges.push_back(edge);
+        }
+        // Extract traffic signal node IDs from the obstacle map (already has internal IDs)
+        auto traffic_lights = scripting_environment.m_obstacle_map.getTrafficSignalNodes();
+
+        neomatrix_files::writeRawNBGraph(legacy_osrm_path,
+                               parsed_osm_data.osm_coordinates,
+                               parsed_osm_data.osm_node_ids,
+                               raw_edges,
+                               parsed_osm_data.annotation_data,
+                               traffic_lights);
+        util::Log() << "Wrote .osrm.v5-legacy-osrm with " << raw_edges.size() << " pre-compression edges, "
+                     << parsed_osm_data.annotation_data.size() << " annotations, and "
+                     << traffic_lights.size() << " traffic lights";
+    }
 
     // Create a node-based graph from the OSRM file
     NodeBasedGraphFactory node_based_graph_factory(scripting_environment,

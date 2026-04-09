@@ -199,6 +199,24 @@ class ObstacleMap
     // compression with the leading node of the leading node.
     void compress(NodeID from, NodeID delendus, NodeID to);
 
+    // [Neomatrix fork] Return sorted, deduplicated list of internal node IDs that have traffic
+    // signals. Used to support the v5 legacy OSRM export. Must be called after fixupNodes().
+    std::vector<NodeID> getTrafficSignalNodes() const
+    {
+        std::vector<NodeID> result;
+        for (const auto &[_, entry] : obstacles)
+        {
+            const auto &[_from, to, obstacle] = entry;
+            if (obstacle.type == Obstacle::Type::TrafficSignals)
+            {
+                result.push_back(to);
+            }
+        }
+        std::sort(result.begin(), result.end());
+        result.erase(std::unique(result.begin(), result.end()), result.end());
+        return result;
+    }
+
   private:
     // obstacles according to external id
     tbb::concurrent_vector<OsmFromToObstacle> osm_obstacles;
