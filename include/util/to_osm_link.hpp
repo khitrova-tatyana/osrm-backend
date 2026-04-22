@@ -4,6 +4,7 @@
 #include "util/coordinate.hpp"
 
 #include <iomanip>
+#include <sstream>
 #include <string>
 
 namespace osrm::util

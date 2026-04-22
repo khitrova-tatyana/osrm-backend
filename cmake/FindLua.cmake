@@ -37,8 +37,7 @@
 # locations other than lua/
 
 if(NOT PKG_CONFIG_FOUND)
-  include(CMakeFindDependencyMacro)
-  find_dependency(PkgConfig)
+  find_package(PkgConfig QUIET)
 endif()
 
 unset(_lua_include_subdirs)

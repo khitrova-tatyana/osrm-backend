@@ -278,7 +278,10 @@ elseif(CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
   add_dependency_defines(-D_WIN32_WINNT=0x0501)
   add_dependency_defines(-DXML_STATIC)
   find_library(ws2_32_LIBRARY_PATH ws2_32)
-  target_link_libraries(osrm-extract wsock32 ws2_32)
+  target_link_libraries(osrm-extract wsock32 ws2_32 psapi)
+  foreach(_osrm_tool osrm-datastore osrm-partition osrm-customize osrm-contract osrm-routed)
+    target_link_libraries(${_osrm_tool} psapi)
+  endforeach()
 endif()
 
 if(UNIX AND NOT APPLE)
@@ -668,7 +671,8 @@ file(GENERATE
      OUTPUT
      ${PROJECT_BINARY_DIR}/libosrm.pc
      INPUT
-     ${PROJECT_BINARY_DIR}/pkgconfig.configured)
+     ${PROJECT_BINARY_DIR}/pkgconfig.configured
+     CONDITION "$<CONFIG:Release>")
 
 install(FILES ${PROJECT_BINARY_DIR}/libosrm.pc DESTINATION ${PKGCONFIG_LIBRARY_DIR}/pkgconfig)
 
