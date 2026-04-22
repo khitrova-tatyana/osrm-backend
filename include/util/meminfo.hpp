@@ -3,9 +3,13 @@
 
 #include "util/log.hpp"
 #include <cstddef>
+#include <iomanip>
 
 #ifndef _WIN32
 #include <sys/resource.h>
+#else
+#include <windows.h>
+#include <psapi.h>
 #endif
 
 namespace osrm::util
@@ -24,17 +28,19 @@ inline size_t PeakRAMUsedInBytes()
     return usage.ru_maxrss;
 #endif // __linux__
 #else  // _WIN32
+    PROCESS_MEMORY_COUNTERS pmc;
+    if (GetProcessMemoryInfo(GetCurrentProcess(), &pmc, sizeof(pmc)))
+        return pmc.PeakWorkingSetSize;
     return 0;
 #endif // _WIN32
 }
 
 inline void DumpMemoryStats()
 {
-#ifndef _WIN32
-    util::Log() << "RAM: peak bytes used: " << PeakRAMUsedInBytes();
-#else  // _WIN32
-    util::Log() << "RAM: peak bytes used: <not implemented on Windows>";
-#endif // _WIN32
+    util::Log() << "Peak RAM: " << std::setprecision(3)
+                << static_cast<double>(PeakRAMUsedInBytes()) /
+                       static_cast<double>(1024 * 1024)
+                << "MB";
 }
 } // namespace osrm::util
 
