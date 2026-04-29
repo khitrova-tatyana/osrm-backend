@@ -85,7 +85,9 @@ function(_lua_set_version_vars)
              lua-${CMAKE_MATCH_1}.${CMAKE_MATCH_2}
              lua.${CMAKE_MATCH_1}.${CMAKE_MATCH_2}
         )
-        pkg_check_modules(LUA QUIET "lua${ver}")
+        if(PKG_CONFIG_FOUND)
+          pkg_check_modules(LUA QUIET "lua${ver}")
+        endif()
         list(APPEND _lua_include_subdirs ${LUA_INCLUDE_DIRS})
         list(APPEND _lua_library_names ${LUA_LIBRARIES})
         list(APPEND _lua_library_dirs ${LUA_LIBRARY_DIRS})
